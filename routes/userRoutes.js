@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { register, login, getAllUsers, searchById, deleteUser, updateUser } from "../db/userDB.js";
+import { userAutorizado } from "../middlewares/funtionPassword.js";
 const router = Router();
 
 router.post("/registro", async (req,res)=>{
@@ -15,10 +16,10 @@ router.post("/login", async (req,res)=>{
 });
 
 router.get("/salir", async(req,res)=>{
-    res.json("Estas en salir");
+    res.cookie("token","",{expires:new Date(0)}).status(200).json("Sesion cerrada correctamente");
 });
 
-/*router.get("/usuariosLogueados", async(req,res)=>{
+router.get("/usuariosLogueados", userAutorizado, async(req,res)=>{
     res.json("Usuarios convencionales y administradores logeados");
 });
 
@@ -28,7 +29,7 @@ router.get("/administradores", async(req,res)=>{
 
 router.get("/cualquierUsuario", async(req,res)=>{
     res.json("Todos los usuarios");
-}); */
+});
 
 router.get("/usuarios", async (req, res) => {
     try {
