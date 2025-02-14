@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { register, login, getAllUsers, searchById, deleteUser, updateUser } from "../db/userDB.js";
-import { userAutorizado } from "../middlewares/funtionPassword.js";
+import { adminAutorizado, userAutorizado } from "../middlewares/funtionPassword.js";
 const router = Router();
 
 router.post("/registro", async (req,res)=>{
@@ -19,12 +19,14 @@ router.get("/salir", async(req,res)=>{
     res.cookie("token","",{expires:new Date(0)}).status(200).json("Sesion cerrada correctamente");
 });
 
-router.get("/usuariosLogueados", userAutorizado, async(req,res)=>{
-    res.json("Usuarios convencionales y administradores logeados");
+router.get("/usuariosLogueados",(req,res)=>{
+    const answer = userAutorizado(req.cookies.token,req);
+    res.status(answer.status).json(answer.mensajeUser);
 });
 
 router.get("/administradores", async(req,res)=>{
-    res.json("Administradores logueados");
+    const answer = await adminAutorizado(req);
+    res.status(answer.status).json(answer.mensajeUser);
 });
 
 router.get("/cualquierUsuario", async(req,res)=>{

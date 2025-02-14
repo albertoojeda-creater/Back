@@ -98,3 +98,18 @@ export const updateUser = async ({ id, updateData }) => {
         return mensaje(400, "Error al actualizar usuario", error);
     }
 };
+
+export const isAdmin = async (id) =>{
+    try {
+        const user = await User.findById(id);
+        //console.log(user.tipoUser);
+        
+        if (user.tipoUser!="admin"){
+            return false;
+        }else{
+            return true;
+        }
+    } catch (error) {
+        return mensaje(400,"Admin no autorizado", error);
+    }
+}

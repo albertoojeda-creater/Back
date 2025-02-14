@@ -1,7 +1,8 @@
-import { log } from "console";
 import crypto from "crypto";
 import jwt from "jsonwebtoken";
 import 'dotenv/config'
+import { mensaje } from "../libs/mensaje.js";
+import { isAdmin } from "../db/userDB.js";
 
 export function encriptarPassword(password){
     const salt = crypto.randomBytes(32).toString("hex");
@@ -18,26 +19,26 @@ export function validarPassword(password, salt, hash){
 }
 
 
-export function userAutorizado(req,res,next){
-    const token = req.cookies.token;
+export function userAutorizado(token, req){
     if(!token){
-        res.status(400).json("Usuario no autorizado");
+        return mensaje(400, "Usuario no Autorizado");
     }
-    jwt.sign (token,process.env.SECRET_TOKEN,(error, usuario)=>{
+    jwt.verify (token,process.env.SECRET_TOKEN,(error, usuario)=>{
         if (error) {
-            res.status(400).json("Usuario no autorizado");
+            return mensaje(400, "Usuario no Autorizado");
         }
         req.usuario=usuario; 
     });
-    next();
+    return mensaje(200,"Usuario Autorizado");
 }
 
-export function adminAutorizado(){
-    
+export async function adminAutorizado(req){
+    const answer = userAutorizado(req.cookies.token, req);
+    if (answer.status!="200"){
+        return mensaje(400,"Admin no autorizado");
+    }
+    if (await isAdmin(req.usuario.id)!=true) {
+        return mensaje(400,"Admin no autorizado");
+    }
+    return mensaje(200,"Admin autorizado");
 }
-
-/*const {salt,hash} = encriptarPassword("abc");
-console.log("salt --->"+salt);
-console.log("hash --->"+hash);
-const aprobado=validarPassword("abc",salt,hash);
-console.log("Aprobado "+aprobado);*/
